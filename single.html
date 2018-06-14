@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Without worker</title>
+    </head>
+
+    <body>
+        <h3></h3>
+        <pre></pre>
+
+        <p>
+            <a href="/">Return to menu</a>
+        </p>
+
+        <script src="crypto-js.min.js"></script>
+        <script src="aes.min.js"></script>
+        <script>
+            (async () => {
+                const sleep = function() {
+                    return new Promise((res, rej) => {
+                        setTimeout(() => {
+                            res();
+                        }, 10);
+                    });
+                };
+
+                const status = document.querySelector('h3');
+                const result = document.querySelector('pre');
+
+                status.textContent = 'Downloading sample file...';
+
+                const request = await fetch('words.txt');
+                const original = await request.text();
+                
+                const start = new Date().getTime();
+
+                for (let i = 0; i < 10; i++) {
+                    status.textContent = `Crypting and decrypting sample file (${i + 1}) ...`;
+                    let crypted = CryptoJS.AES.encrypt(original, 'key');
+                    CryptoJS.AES.decrypt(crypted, 'key');
+                    await sleep();
+                }
+
+                result.textContent = `Done in ${new Date().getTime() - start - 100} ms.`;
+            })();
+        </script>
+    </body>
+</html>

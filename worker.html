@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Without worker</title>
+    </head>
+
+    <body>
+        <h3></h3>
+        <pre></pre>
+
+        <p>
+            <a href="/">Return to menu</a>
+        </p>
+
+        <script>
+            (async () => {
+                const sleep = function() {
+                    return new Promise((res, rej) => {
+                        setTimeout(() => {
+                            res();
+                        }, 10);
+                    });
+                };
+
+                const status = document.querySelector('h3');
+                const result = document.querySelector('pre');
+
+                status.textContent = 'Downloading sample file...';
+
+                const request = await fetch('words.txt');
+                const original = await request.text();
+
+                const start = new Date().getTime();
+                var done = 0;
+                const waiter = function() {
+                    done++;
+                    status.textContent = `Waiting for workers (${done}/10)...`;
+
+                    if (done === 10) {
+                        status.textContent = 'All done!';
+                        result.textContent = `Done in ${new Date().getTime() - start - 10} ms.`;
+                    }
+                };
+
+                status.textContent = 'Starting workers...';
+
+                for (let i = 0; i < 10; i++) {
+                    const cryptWorker = new Worker('worker.js');
+
+                    cryptWorker.onmessage = () => {
+                        waiter();
+                    };
+
+                    cryptWorker.postMessage(original);
+                }
+
+                status.textContent = 'Workers started!';
+
+                await sleep();
+            })();
+        </script>
+    </body>
+</html>
